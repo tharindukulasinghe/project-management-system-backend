@@ -4,6 +4,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const users = require("./routes/users");
 const auth = require("./routes/auth");
+const projects = require("./routes/projects");
 const multer = require("multer");
 const mongoose = require("mongoose");
 const port = process.env.port || 3000;
@@ -17,6 +18,7 @@ app.use(cors());
 
 app.use("/api/users", users);
 app.use("/api/auth", auth);
+app.use("/api/projects", projects);
 
 mongoose.connect("mongodb://localhost:27017/project-management", {
   useNewUrlParser: true

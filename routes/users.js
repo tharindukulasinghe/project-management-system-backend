@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const _ = require("lodash");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
 router.post("/register", async (req, res) => {
   console.log("hi");
@@ -19,7 +20,8 @@ router.post("/register", async (req, res) => {
   }
 
   user = new User({
-    name: req.body.name,
+    firstname: req.body.firstname,
+    lastname: req.body.lastname,
     email: req.body.email,
     password: req.body.password
   });
@@ -29,7 +31,21 @@ router.post("/register", async (req, res) => {
 
   await user.save();
 
-  res.status(200).send(_.pick(user, ["name", "email", "_id"]));
+  const token = jwt.sign(
+    {
+      _id: user._id,
+      name: user.name,
+      email: user.email
+    },
+    "project-management",
+    { expiresIn: 60 * 15 }
+  );
+
+  res
+    .status(200)
+    .header("x-auth-token", token)
+    .header("access-control-expose-headers", "x-auth-token")
+    .send(_.pick(user, ["firstname", "lastname", "email", "_id"]));
 });
 
 module.exports = router;
