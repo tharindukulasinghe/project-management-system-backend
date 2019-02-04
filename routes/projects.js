@@ -3,8 +3,10 @@ const { ProjectRole } = require("../models/projectRole");
 const express = require("express");
 const router = express.Router();
 const _ = require("lodash");
+const nodemailer = require("nodemailer");
 const { Category, validate: taskValidate } = require("../models/taskCategory");
 const { ProjectTask, validateProjectTask } = require("../models/projectTasks");
+const { ProjectCols } = require("../models/projectCols");
 
 router.post("/newproject", async (req, res) => {
   console.log("hi");
@@ -81,6 +83,12 @@ router.get("/getCategories", async (req, res) => {
   res.status(200).send(categories);
 });
 
+router.get("/getProjectTasks", async (req, res) => {
+  //console.log("kk");
+  let tasks = await ProjectTask.find({ projectId: req.query.id });
+  res.status(200).send(tasks);
+});
+
 router.post("/newcategory", async (req, res) => {
   console.log("hi");
   const { error } = taskValidate(req.body);
@@ -129,6 +137,47 @@ router.post("/newProjectTask", async (req, res) => {
   res
     .status(200)
     .send(_.pick(projectTask, ["title", "projectId", "_id", "description"]));
+});
+
+router.get("/inviteCol", async (req, res) => {
+  //console.log("kk");
+  let id = req.query.projectId;
+  let email = req.query.email;
+
+  let transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: "itfacproject@gmail.com",
+      pass: "tharindu123"
+    }
+  });
+
+  const mailOptions = {
+    from: "itfacproject@gmail.com", // sender address
+    to: `${email}`, // list of receivers
+    subject: "You are Invited", // Subject line
+    html: `<html> <a href="http://localhost:3000/api/projects/inviteCol?projectId=${id}&email=${email}">Follow this link to accept invitation.</a></html>` // plain text body
+  };
+
+  transporter.sendMail(mailOptions, function(err, info) {
+    if (err) console.log(err);
+    else console.log(info);
+  });
+});
+
+router.get("/acceptInvite", async (req, res) => {
+  //console.log("kk");
+
+  let id = req.query.projectId;
+  let email = req.query.email;
+
+  let result = await ProjectCols.findOneAndUpdate(
+    { projectId: id },
+    { $push: { cols: email } },
+    { upsert: true }
+  );
+  console.log(result);
+  res.status(200).send("success");
 });
 
 module.exports = router;
