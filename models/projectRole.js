@@ -20,6 +20,12 @@ const projectRoleSchema = new mongoose.Schema({
     minlength: 5,
     maxlength: 20
   },
+  id: {
+    type: String,
+    required: true,
+    minlength: 5,
+    maxlength: 100
+  },
   project: {
     name: {
       type: String,
