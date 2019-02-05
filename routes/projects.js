@@ -284,17 +284,15 @@ router.get("/getDocs", async (req, res) => {
 
 router.post("/projectTaskAssign", async (req, res) => {
   console.log("hi hihihih");
-
-  let assignTask = await ProjectTask.findOne({
-    $and: [{ _id: req.body.taskid }, { assingedPersons: req.body.email }]
-  });
-  if (assignTask) {
+  console.log(req.body);
+  let assignTask = await ProjectTask.findById(req.body.taskid);
+  if (assignTask.assingedPersons.includes(req.body.email)) {
     console.log("ass");
     return res.status(400).send(`This user has already assigned to this task.`);
   }
 
-  let result = await ProjectTask.findOneAndUpdate(
-    { _id: req.body.taskid },
+  let result = await ProjectTask.findByIdAndUpdate(
+    req.body.taskid,
     { $push: { assingedPersons: req.body.email } },
     { upsert: true }
   );
