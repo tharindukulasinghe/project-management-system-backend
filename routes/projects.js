@@ -10,6 +10,7 @@ const { ProjectCols } = require("../models/projectCols");
 const { User } = require("../models/user");
 var multer = require("multer");
 var upload = multer({ dest: "uploads/" });
+const { ProjectDoc, validateDoc } = require("../models/projectDoc");
 
 router.post("/newproject", async (req, res) => {
   console.log("hi");
@@ -243,13 +244,62 @@ router.get("/acceptInvite", async (req, res) => {
   res.status(200).send("You have successfully accepted the invitation.");
 });
 
-router.post("/projectDocument", upload.single("document"), function(
-  req,
-  res,
-  next
-) {
-  console.log(req.file.filename);
-  res.send("success");
+router.post(
+  "/projectDocument",
+  upload.single("document"),
+  async (req, res, next) => {
+    if (!req.file) {
+      return res.status(400).send("No File uploaded");
+    }
+    const { error } = validateDoc({
+      title: req.body.title,
+      id: req.body.id,
+      originalname: req.file.originalname,
+      savedname: req.file.filename
+    });
+
+    if (error) {
+      return res.status(400).send(error.details[0].message);
+    }
+
+    const projectdoc = new ProjectDoc({
+      title: req.body.title,
+      id: req.body.id,
+      originalname: req.file.originalname,
+      savedname: req.file.filename
+    });
+
+    await projectdoc.save();
+    console.log(req.file.originalname);
+    console.log(req.body);
+    res.send("success");
+  }
+);
+
+router.get("/getDocs", async (req, res) => {
+  console.log("kkk");
+  let result = await ProjectDoc.find({ id: req.query.id });
+  res.status(200).send(result);
+});
+
+router.post("/projectTaskAssign", async (req, res) => {
+  console.log("hi hihihih");
+
+  let assignTask = await ProjectTask.findOne({
+    $and: [{ _id: req.body.taskid }, { assingedPersons: req.body.email }]
+  });
+  if (assignTask) {
+    console.log("ass");
+    return res.status(400).send(`This user has already assigned to this task.`);
+  }
+
+  let result = await ProjectTask.findOneAndUpdate(
+    { _id: req.body.taskid },
+    { $push: { assingedPersons: req.body.email } },
+    { upsert: true }
+  );
+
+  res.status(200).send(result);
 });
 
 module.exports = router;

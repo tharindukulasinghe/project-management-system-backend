@@ -1,7 +1,6 @@
 const Joi = require("joi");
 const mongoose = require("mongoose");
 
-var assingedPerson = new mongoose.Schema({ name: String, email: String });
 const projectTaskSchema = new mongoose.Schema({
   title: {
     type: String,
@@ -27,7 +26,7 @@ const projectTaskSchema = new mongoose.Schema({
     minlength: 1,
     maxlength: 50
   },
-  assingedPersons: [assingedPerson],
+  assingedPersons: [String],
   created: {
     type: Number,
     required: true,
