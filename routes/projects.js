@@ -139,6 +139,7 @@ router.post("/newProjectTask", async (req, res) => {
     description: req.body.description,
     category: req.body.category,
     assingedPersons: [],
+    status: "open",
     created: Date.now()
   });
 
@@ -146,7 +147,15 @@ router.post("/newProjectTask", async (req, res) => {
 
   res
     .status(200)
-    .send(_.pick(projectTask, ["title", "projectId", "_id", "description"]));
+    .send(
+      _.pick(projectTask, [
+        "title",
+        "projectId",
+        "_id",
+        "description",
+        "status"
+      ])
+    );
 });
 //new
 router.post("/projectRoleAssign", async (req, res) => {
@@ -160,7 +169,6 @@ router.post("/projectRoleAssign", async (req, res) => {
     ]
   });
   if (assignRole) {
-    console.log("ass");
     return res
       .status(400)
       .send(
@@ -297,6 +305,17 @@ router.post("/projectTaskAssign", async (req, res) => {
     { upsert: true }
   );
 
+  res.status(200).send(result);
+});
+
+router.post("/projectTaskStatusChange", async (req, res) => {
+  console.log("hi hihihih");
+  console.log(req.body);
+  let assignTask = await ProjectTask.findById(req.body.taskid);
+
+  let result = await ProjectTask.findByIdAndUpdate(req.body.taskid, {
+    status: req.body.status
+  });
   res.status(200).send(result);
 });
 

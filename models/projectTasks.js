@@ -27,6 +27,12 @@ const projectTaskSchema = new mongoose.Schema({
     maxlength: 50
   },
   assingedPersons: [String],
+  status: {
+    type: String,
+    required: false,
+    minlength: 1,
+    maxlength: 50
+  },
   created: {
     type: Number,
     required: true,
